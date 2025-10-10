@@ -10,8 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY requirements.txt .
 
-
-RUN pip install --user --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Etap 2: Final image
 FROM python:3.11-slim
@@ -25,7 +24,10 @@ RUN adduser --disabled-password --gecos "" \
     --home "/nonexistent" --shell "/sbin/nologin" \
     --no-create-home --uid "10001" appuser
 
-COPY --from=builder /root/.local /root/.local
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+
 ENV PATH=/root/.local/bin:$PATH
 
 COPY . .
