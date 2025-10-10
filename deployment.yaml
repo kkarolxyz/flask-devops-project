@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-flask-app-deployment
+  labels: 
+    app: my-flask-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-flask-app
+  template:
+    metadata:
+      labels:
+        app: my-flask-app
+    spec:
+      containers:
+      - name: my-flask-app
+        image: flask-app:latest
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 5000
+        readinesProbe: 
+          httpGet: 
+            path: /health-kube
+            port: 5000
+          initialDeleySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health-kube
+            port: 5000
+          initialDeleySeconds: 15
+          periodSeconds: 20
