@@ -24,10 +24,7 @@ pipeline {
         
         stage('Push to Docker Hub') {
             steps {
-                script {
-                    echo "DOCKER HUB"
-                    }
-                }
+                echo "DOCKER HUB"
             }
         }
         
