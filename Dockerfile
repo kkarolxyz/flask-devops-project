@@ -1,33 +1,37 @@
-FROM python:3.11-slim
-
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-#Working directory 
+# 1: Builder phase
+FROM python:3.11-slim AS builder
 
 WORKDIR /app
 
-#Non root user
-RUN adduser \
-    --disabled-password \
-    --gecos "" \
-    --home "/nonexistent" \
-    --shell "/sbin/nologin" \
-    --no-create-home \
-    --uid "10001" \
-    appuser
 
-#Copy req file
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+
 COPY requirements.txt .
 
-#Install req
-RUN pip install --no-cache-dir -r requirements.txt
+
+RUN pip install --user --no-cache-dir -r requirements.txt
+
+# Etap 2: Final image
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+RUN adduser --disabled-password --gecos "" \
+    --home "/nonexistent" --shell "/sbin/nologin" \
+    --no-create-home --uid "10001" appuser
+
+COPY --from=builder /root/.local /root/.local
+ENV PATH=/root/.local/bin:$PATH
 
 COPY . .
 
 USER appuser
 
-EXPOSE  5000
+EXPOSE 5000
 
-CMD [ "python", "app.py" ]
+CMD ["python", "app.py"]
