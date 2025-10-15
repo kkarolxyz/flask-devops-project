@@ -1,1 +1,1 @@
-first file squash
+first file squash next commit
